@@ -20,3 +20,16 @@ The goal is to gain practical experience managing Linux infrastructure, automati
 - **Networking:** SSH, TCP/IP
 - **Virtualization:** Oracle VirtualBox
 - **Version Control:** Git and GitHub
+
+
+## System Architecture
+
+```mermaid
+flowchart TD
+    A[Rocky Linux - Ansible Controller] -->|SSH / Ansible| B[Ubuntu Server - web01]
+    A -->|SSH / Ansible| C[Ubuntu Server - web02]
+    B --> D[Nginx Web Server]
+    C --> E[Nginx Web Server]
+    A --- F[Go Backend and Bash Monitoring]
+```
+  
