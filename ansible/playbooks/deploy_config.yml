@@ -1,0 +1,18 @@
+---
+
+- name: Deploy monitoring configuration
+  hosts: webservers
+  gather_facts: true
+
+  tasks:
+    - name: Create monitoring directory
+      ansible.builtin.file:
+        path: "{{ ansible_user_dir }}/server-monitor/config"
+        state: directory
+        mode: "0755"
+
+    - name: Generate monitoring configuration
+      ansible.builtin.template:
+        src: ../templates/monitor.conf.j2
+        dest: "{{ ansible_user_dir }}/server-monitor/config/monitor.conf"
+        mode: "0644"

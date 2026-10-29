@@ -1,0 +1,26 @@
+# Runtime logs
+logs/
+*.log
+
+# Backup files
+*.save
+*.bak
+*~
+
+# Secrets and environment variables
+
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+id_rsa
+id_ed25519
+*.retry
+
+# Ansible sensitive configuration
+
+ansible/inventory.ini
+ansible/host_vars/
+ansible/*.vault
+

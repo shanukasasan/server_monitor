@@ -1,0 +1,10 @@
+---
+
+- name: Test Host Variables
+  hosts: webservers
+  gather_facts: false
+
+  tasks:
+    - name: Display server threshold
+      ansible.builtin.debug:
+        msg: "{{ inventory_hostname }} has a disk threshold of {{ disk_threshold }}%"

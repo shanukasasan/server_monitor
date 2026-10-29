@@ -1,0 +1,17 @@
+---
+
+- name: Configure Nginx on Ubuntu Servers
+  hosts: webservers
+  become: true
+
+  tasks:
+   - name: Install Nginx
+     ansible.builtin.apt: 
+       name: nginx
+       state: present
+
+   - name:  Start and enable Nginx 
+     ansible.builtin.systemd_service:
+        name: nginx
+        state: started
+        enabled: true

@@ -1,0 +1,25 @@
+---
+- name: Check Ubuntu Servers
+  hosts: webservers
+  gather_facts: false
+
+  tasks:
+    - name: Check hostname
+      ansible.builtin.command: hostname
+      register: hostname_result
+      changed_when: false
+
+    - name: Display hostname
+      ansible.builtin.debug: 
+        msg: "{{ hostname_result.stdout }}"
+
+    - name: Check Uptime
+      ansible.builtin.command: uptime -p
+      register: uptime_result
+      changed_when: false
+
+    - name: Display Uptime
+      ansible.builtin.debug: 
+        msg: "{{ uptime_result.stdout }}"
+
+
