@@ -33,3 +33,46 @@ flowchart TD
     A --- F[Go Backend and Bash Monitoring]
 ```
   
+
+## Project Structure
+
+```text
+server-monitor/
+├── ansible/
+│   ├── ansible.cfg
+│   ├── playbooks/
+│   │   ├── server_check.yml
+│   │   ├── nginx_setup.yml
+│   │   ├── nginx_deploy.yml
+│   │   ├── nginx_config.yml
+│   │   ├── deploy_monitor.yml
+│   │   ├── deploy_config.yml
+│   │   └── check_threshold.yml
+│   ├── templates/
+│   │   ├── lab-nginx.conf.j2
+│   │   └── monitor.conf.j2
+│   └── files/
+│       └── index.html
+├── backend/
+│   └── main.go
+├── scripts/
+│   ├── centralmonitor.sh
+│   └── system_info.sh
+├── .gitignore
+└── README.md
+```
+
+## Main Components
+
+### Ansible
+Ansible playbooks for server checks, Nginx setup and configuration, monitoring deployment, and threshold checks.
+
+### Go Backend
+`backend/main.go` contains the Go backend developed for the monitoring system.
+
+### Bash Scripts
+Shell scripts for collecting system information and running central monitoring tasks.
+
+### Jinja2 Templates
+Templates used by Ansible to generate Nginx and monitoring configuration files.
+  
