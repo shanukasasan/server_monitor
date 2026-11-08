@@ -1,78 +1,84 @@
-# Linux Server Management & Monitoring System
+## Ansible Automation
 
-A personal infrastructure engineering project built to practice Linux server administration, configuration management, automation, and backend development.
+The project uses Ansible to automate server configuration and monitoring deployment across two Ubuntu servers from a Rocky Linux controller.
 
-## Project Overview
+The automation is organized into two reusable roles.
 
-This project uses a Rocky Linux control server to manage two Ubuntu Server virtual machines through Ansible.
+### 1. Nginx Role
 
-The environment includes Nginx web servers, Bash monitoring scripts, and a Go-based backend.
+**Location:** `ansible/roles/nginx/`
 
-The goal is to gain practical experience managing Linux infrastructure, automating repetitive administration tasks, and developing monitoring functionality.
+The Nginx role handles web server installation, configuration management, and deployment verification.
 
-## Technologies Used
+**Features:**
+- Installs and enables Nginx.
+- Creates the web document root and deploys a static HTML page.
+- Generates server-specific configurations using Jinja2.
+- Creates configuration backups before replacement.
+- Validates Nginx configurations using `nginx -t`.
+- Reloads Nginx only when its configuration changes.
+- Performs HTTP health checks.
+- Attempts automatic rollback when deployment validation fails.
 
-- **Operating Systems:** Rocky Linux, Ubuntu Server
-- **Configuration Management:** Ansible
-- **Web Server:** Nginx
-- **Backend Development:** Go
-- **Scripting:** Bash
-- **Networking:** SSH, TCP/IP
-- **Virtualization:** Oracle VirtualBox
-- **Version Control:** Git and GitHub
+The role uses Ansible's `block`, `rescue`, `register`, and `when` features to manage deployment errors.
 
+The rollback mechanism was tested by deliberately introducing an invalid Nginx configuration and verifying that Ansible restored the previous configuration.
 
-## System Architecture
+### 2. Monitoring Role
 
-```mermaid
-flowchart TD
-    A[Rocky Linux - Ansible Controller] -->|SSH / Ansible| B[Ubuntu Server - web01]
-    A -->|SSH / Ansible| C[Ubuntu Server - web02]
-    B --> D[Nginx Web Server]
-    C --> E[Nginx Web Server]
-    A --- F[Go Backend and Bash Monitoring]
-```
-  
+**Location:** `ansible/roles/monitoring/`
 
-## Project Structure
+The monitoring role deploys and configures the existing Bash monitoring scripts on both Ubuntu servers.
 
-```text
-server-monitor/
-├── ansible/
-│   ├── ansible.cfg
-│   ├── playbooks/
-│   │   ├── server_check.yml
-│   │   ├── nginx_setup.yml
-│   │   ├── nginx_deploy.yml
-│   │   ├── nginx_config.yml
-│   │   ├── deploy_monitor.yml
-│   │   ├── deploy_config.yml
-│   │   └── check_threshold.yml
-│   ├── templates/
-│   │   ├── lab-nginx.conf.j2
-│   │   └── monitor.conf.j2
-│   └── files/
-│       └── index.html
-├── backend/
-│   └── main.go
-├── scripts/
-│   ├── centralmonitor.sh
-│   └── system_info.sh
-├── .gitignore
-└── README.md
+**Features:**
+- Creates monitoring directories.
+- Deploys `system_info.sh`.
+- Generates `monitor.conf` from a Jinja2 template.
+- Configures disk usage thresholds using per-host variables.
+- Maintains the required file permissions.
+- Supports repeatable, idempotent deployments.
+
+Once deployed, `centralmonitor.sh` on the Rocky Linux controller connects directly to both Ubuntu servers through SSH and executes their monitoring scripts.
+
+### Deployment
+
+Run the following commands from the `ansible/` directory.
+
+**Deploy the Nginx role:**
+
+```bash
+ansible-playbook site.yml -K
 ```
 
-## Main Components
+**Deploy the monitoring role:**
 
-### Ansible
-Ansible playbooks for server checks, Nginx setup and configuration, monitoring deployment, and threshold checks.
+```bash
+ansible-playbook monitoring.yml -K
+```
 
-### Go Backend
-`backend/main.go` contains the Go backend developed for the monitoring system.
+**Preview changes on web01:**
 
-### Bash Scripts
-Shell scripts for collecting system information and running central monitoring tasks.
+```bash
+ansible-playbook site.yml --limit web01 --check --diff -K
+```
 
-### Jinja2 Templates
-Templates used by Ansible to generate Nginx and monitoring configuration files.
-  
+### Testing
+
+The following functionality has been tested in the lab:
+
+| Test | Result |
+|---|---|
+| Nginx deployment | Passed |
+| Nginx configuration validation | Passed |
+| Conditional Nginx reload | Passed |
+| Idempotency | Passed |
+| Nginx configuration rollback | Passed on web01 |
+| Monitoring role deployment | Passed on both servers |
+| SSH-based central monitoring | Passed |
+
+Both roles use Ansible's declarative configuration management to reduce repetitive manual server administration.
+
+Detailed implementation documentation is available in:
+
+- [Nginx Role README](ansible/roles/nginx/README.md)
+- [Monitoring Role README](ansible/roles/monitoring/README.md)
