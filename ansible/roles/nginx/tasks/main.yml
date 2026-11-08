@@ -1,0 +1,88 @@
+---
+- name: Install Nginx
+  ansible.builtin.apt:
+    name: nginx
+    state: present
+
+- name: Start and enable Nginx
+  ansible.builtin.systemd_service:
+    name: nginx
+    state: started
+    enabled: true
+
+- name: Check existing Nginx configuration
+  ansible.builtin.stat:
+    path: /etc/nginx/conf.d/lab.conf
+  register: nginx_original
+
+- name: Deploy Nginx safely
+  block:
+
+
+    - name: Deploy Nginx configuration
+      ansible.builtin.template:
+        src: lab-nginx.conf.j2
+        dest: /etc/nginx/conf.d/lab.conf
+        owner: root
+        group: root
+        mode: "0644"
+        backup: true
+      register: nginx_deploy
+
+    - name: Validate Nginx configuration
+      ansible.builtin.command: nginx -t
+      changed_when: false
+
+    - name: Reload Nginx if configuration changed
+      ansible.builtin.systemd_service:
+        name: nginx
+        state: reloaded
+      when: nginx_deploy.changed
+
+    - name: Check Nginx HTTP response
+      ansible.builtin.uri:
+        url: http://127.0.0.1:8080/
+        status_code: 200
+      register: nginx_health
+      retries: 3
+      delay: 2
+      until: nginx_health.status | default(0) == 200
+      when: not ansible_check_mode
+
+
+  rescue:
+    - name: Restore previous configuration
+      ansible.builtin.copy:
+        src: "{{ nginx_deploy.backup_file }}"
+        dest: /etc/nginx/conf.d/lab.conf
+        remote_src: true
+        owner: root
+        group: root
+        mode: "0644"
+      when:
+         - nginx_original.stat.exists
+         - nginx_deploy.changed | default(false)
+         - nginx_deploy.backup_file is defined
+
+    - name: Remove new configuration if none existed
+      ansible.builtin.file:
+        path: /etc/nginx/conf.d/lab.conf
+        state: absent
+      when:
+        - not nginx_original.stat.exists
+        - nginx_deploy.changed | default(false)
+
+    - name: Reload restored configuration
+      ansible.builtin.command: nginx -t
+      changed_when: false
+
+    - name: Reload restored configuration
+      ansible.builtin.systemd_service:
+        name: nginx
+        state: reloaded
+      when: nginx_deploy.changed | default(false)
+
+    - name: Report deployment failure
+      ansible.builtin.fail:
+        msg: "Nginx validation failed. Rollback attempted."
+

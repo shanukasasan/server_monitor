@@ -4,7 +4,7 @@ disk_threshold=80
 
 config_file="$HOME/server-monitor/config/monitor.conf"
 
-if [ -f "config_file"]; then
+if [ -f "$config_file" ]; then
 	source "$config_file"
 	disk_threshold="$DISK_THRESHOLD"
 fi

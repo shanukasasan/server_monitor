@@ -17,13 +17,17 @@ echo
 
 }
 
+mkdir -p "$(dirname "$logfile")"
 
-echo "====== MONITORING STARTED ======"
-echo "Date: $(date '+%Y-%m-%d %H:%M:%S')"
-echo
+{
+	echo "====== MONITORING STARTED ======"
+	echo "Date: $(date '+%Y-%m-%d %H:%M:%S')"
+	echo
 
-for server in "${server[@]}"; do
-	check_server "$server"
-done
+	for server in "${server[@]}"; do
+		check_server "$server"
+	done
 
-echo "COMPLETED"
+	echo "COMPLETED"
+	echo
+} 2>&1 | tee -a "$log_file"

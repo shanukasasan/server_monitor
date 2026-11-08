@@ -1,0 +1,25 @@
+---
+- name: Create monitoring configuration directory
+  ansible.builtin.file:
+    path: "/home/{{ ansible_user }}/server-monitor/{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - config
+    - scripts
+    - logs
+  become: false
+
+- name: Deploy monitoring script
+  ansible.builtin.copy:
+    src: system_info.sh
+    dest: "/home/{{ ansible_user }}/server-monitor/scripts/system_info.sh"
+    mode: "0755"
+  become: false
+
+- name: Deploy monitoring configuration
+  ansible.builtin.template:
+    src: monitor.conf.j2
+    dest: "/home/{{ ansible_user }}/server-monitor/config/monitor.conf"
+    mode: "0644"
+  become: false

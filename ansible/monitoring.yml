@@ -1,0 +1,9 @@
+---
+
+- name: Configure monitoring on Ubuntu servers
+  hosts: webservers
+  become: true
+  serial: 1
+
+  roles:
+    - monitoring

@@ -1,0 +1,10 @@
+---
+
+- name: Manage Nginx webservers
+  hosts: webservers
+  become: true
+  serial: 1
+
+  roles:
+    - nginx
+
