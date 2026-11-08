@@ -134,13 +134,3 @@ The following behaviors have been tested in the lab:
 - Sudo privileges for the SSH user.
 - Nginx available from configured package repositories.
 
-## Future Improvements
-
-- More robust pre-deployment configuration validation.
-- Post-rollback HTTP health checks.
-- Additional integration and failure testing.
-- Automated CI/CD validation.
-
-## Project
-
-Part of the Server-Monitor Linux infrastructure automation project.
