@@ -15,6 +15,14 @@
     path: /etc/nginx/conf.d/lab.conf
   register: nginx_original
 
+- name: Deploy Nginx HTML page
+  ansible.builtin.copy:
+    src: index.html
+    dest: /var/www/html/index.html
+    owner: root
+    group: root
+    mode: "0644"
+
 - name: Deploy Nginx safely
   block:
 
