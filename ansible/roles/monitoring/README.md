@@ -169,14 +169,3 @@ The monitoring role has been tested for:
 - A successful script exit does not necessarily mean every monitored service is healthy.
 - Centralized structured log collection and alerting are not yet implemented.
 
-## Future Improvements
-
-- Persistent centralized monitoring logs.
-- Structured JSON monitoring output.
-- Improved exit codes and error handling.
-- Go-based monitoring API.
-- Web dashboard showing server health and monitoring history.
-
-## Project
-
-Part of the Server-Monitor Linux infrastructure automation project.
