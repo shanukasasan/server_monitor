@@ -1,3 +1,53 @@
+## System Architecture
+
+The Server-Monitor project uses a Rocky Linux controller to manage two Ubuntu servers through Ansible and SSH.
+
+```mermaid
+flowchart TB
+    subgraph Controller["Rocky Linux Controller"]
+        A["Ansible"]
+        B["centralmonitor.sh"]
+        C["Central Monitoring Logs"]
+    end
+
+    subgraph Web01["Ubuntu Server — web01"]
+        D["Nginx Web Server"]
+        E["system_info.sh"]
+        F["monitor.conf"]
+    end
+
+    subgraph Web02["Ubuntu Server — web02"]
+        G["Nginx Web Server"]
+        H["system_info.sh"]
+        I["monitor.conf"]
+    end
+
+    A -->|"Deploy Nginx and monitoring roles"| Web01
+    A -->|"Deploy Nginx and monitoring roles"| Web02
+
+    B -->|"SSH: Execute script"| E
+    B -->|"SSH: Execute script"| H
+
+    F --> E
+    I --> H
+
+    E -->|"Monitoring output"| B
+    H -->|"Monitoring output"| B
+
+    B -.->|"Planned: Persistent logging"| C
+```
+
+### Components
+
+| Component | Responsibility |
+|---|---|
+| Rocky Linux | Ansible controller and central monitoring |
+| Ansible | Automated deployment and configuration management |
+| Nginx | Serves a static HTML website on port 8080 |
+| `system_info.sh` | Collects memory, disk, uptime, and service information |
+| `monitor.conf` | Stores server-specific disk warning thresholds |
+| `centralmonitor.sh` | Executes monitoring scripts remotely over SSH |
+
 ## Ansible Automation
 
 The project uses Ansible to automate server configuration and monitoring deployment across two Ubuntu servers from a Rocky Linux controller.
@@ -9,6 +59,43 @@ The automation is organized into two reusable roles.
 **Location:** `ansible/roles/nginx/`
 
 The Nginx role handles web server installation, configuration management, and deployment verification.
+
+### Nginx Deployment Workflow
+
+The Nginx role uses Ansible to automate configuration deployment, validation, and recovery.
+
+```mermaid
+flowchart TD
+    A["Start Ansible Playbook"] --> B["Install and Start Nginx"]
+    B --> C["Deploy HTML Website"]
+    C --> D["Back Up and Deploy Configuration"]
+    D --> E["Validate with nginx -t"]
+    E --> F{"Configuration Valid?"}
+
+    F -->|Yes| G{"Configuration Changed?"}
+    G -->|Yes| H["Reload Nginx"]
+    G -->|No| I["Skip Reload"]
+
+    H --> J["HTTP Health Check"]
+    I --> J
+
+    J --> K{"HTTP 200?"}
+    K -->|Yes| L["Deployment Successful"]
+    K -->|No| M["Attempt Rollback"]
+
+    F -->|No| M
+    M --> N["Restore Previous Configuration"]
+    N --> O["Validate and Reload Restored Config"]
+    O --> P["Report Deployment Failure"]
+```
+
+**Deployment safeguards:**
+- Existing configurations are backed up before replacement.
+- Nginx configuration is checked using `nginx -t`.
+- Nginx reloads only when the configuration changes.
+- HTTP health checks verify basic website availability.
+- Ansible attempts rollback when deployment validation or health checks fail.
+- Rolling deployment is controlled using `serial: 1`.
 
 **Features:**
 - Installs and enables Nginx.
