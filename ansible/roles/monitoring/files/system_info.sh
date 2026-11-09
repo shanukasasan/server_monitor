@@ -10,6 +10,49 @@ if [ -f "$config_file" ]; then
 	disk_threshold="$DISK_THRESHOLD"
 fi
 
+json_output() {
+
+	local hostname disk_usage ssh_status nginx_status status
+
+	hostname=$(hostname)
+	disk_usage=$(df -P / | awk 'NR==2 {gsub(/%/, "", $5); print $5}')
+
+	ssh_status="stopped"
+	nginx_status="stopped"
+
+	if systemctl is-active --quiet ssh; then
+		ssh_status="running"
+	fi
+
+	if systemctl is-active --quiet nginx; then
+		nginx_status="running"
+	fi
+
+	status="HEALTHY"
+
+	if (( disk_usage >= disk_threshold )) ||
+	   [[ "$ssh_status" != "running" ]] ||
+	   [[ "$nginx_status" != "running" ]]; then
+	    status="UNHEALTHY"
+	fi
+
+
+	printf '{"hostname": "%s","disk_usage":%d,"ssh":"%s","nginx":"%s","status":"%s"}\n' "$hostname" "$disk_usage" "$ssh_status" "$nginx_status" "$status"
+
+
+
+}
+
+
+if  [[ "${1:-}" == "--json" ]]; then
+	json_output
+	exit 0
+fi
+
+
+
+
+
 show_server(){
 	echo "========== SERVER INFORMATION =========="
 	echo
