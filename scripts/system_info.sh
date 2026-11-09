@@ -4,6 +4,7 @@ disk_threshold=80
 
 config_file="$HOME/server-monitor/config/monitor.conf"
 
+health_failed=0
 if [ -f "$config_file" ]; then
 	source "$config_file"
 	disk_threshold="$DISK_THRESHOLD"
@@ -40,6 +41,7 @@ echo
 
 if [ "$disk_usage" -gt "$disk_threshold" ]; then
 	echo "WARNING: Disk Usage is high!"
+	health_failed=1
 else
 	echo  "Disk usage is normal."
 
@@ -49,11 +51,13 @@ echo
 }
 echo
 check_service(){
+	local service="$1"
 
-	if systemctl is-active --quiet "$1"; then
-		echo "[OK] $1 is running"
+	if systemctl is-active --quiet "$service"; then
+		echo "[OK] $service is running"
 	else
-		echo "[WARNING] $1 is not running"
+		echo "[WARNING] $service is not running"
+		health_failed=1
 	fi
 
 }
@@ -71,3 +75,4 @@ for service in "${services[@]}"; do
 	check_service "$service"
 done
 
+exit "$health_failed"

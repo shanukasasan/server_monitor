@@ -6,13 +6,29 @@ log_file="$HOME/server-monitor/logs/central_monitor.log"
 
 
 check_server(){
-	server="$1"
+	local server="$1"
+	local exit_code
 	echo "====== Checking Server ====== "
-	if ssh -o ConnectTimeout=5 "$server" "bash ~/server-monitor/scripts/system_info.sh"; then
-		echo "[OK] Monitoring completed: $server"
-	else
-		echo "[ERROR] Failed to monitor: $server"
-	fi
+	ssh -o ConnectTimeout=5 "$server" "bash ~/server-monitor/scripts/system_info.sh"
+
+
+	exit_code=$?
+	case "$exit_code" in
+		0)
+		   echo "[HEALTHY] $server"
+		   ;;
+		1)
+		   echo "[UNHEALTHY] $server"
+		   ;;
+
+		255)
+		   echo "[UNREACHABLE] $server"
+		   ;;
+
+		*)
+		   echo "[ERROR] Monitoring execution failed on $server (exit code: $exit_code)"
+		   ;;
+	esac
 echo
 
 }
