@@ -293,6 +293,7 @@ func main() {
 	http.HandleFunc("/monitor", monitorHandler)
 	http.HandleFunc("/servers", serversHandler)
 	http.HandleFunc("/history", historyHandler)
+	http.Handle("/", http.FileServer(http.Dir("backend/static")))
 
 	go startMonitoring()
 

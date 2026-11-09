@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Server-Monitor Dashboard</title>
+</head>
+<body>
+    <h1>Server-Monitor</h1>
+    <p>Linux Infrastructure Monitoring Dashboard</p>
+
+    <div id="servers">
+        
+    </div>
+
+<script>
+    async function loadServers() {
+        const container = document.getElementById("servers");
+
+        try {
+            const response = await fetch("/servers");
+
+            if (!response.ok) {
+                throw new Error("Failed to fetch server data");
+            }
+
+            const data = await response.json();
+
+            container.replaceChildren();
+
+            for (const server of data.servers) {
+                const card = document.createElement("div");
+
+                const name = document.createElement("h2");
+                name.textContent = server.hostname;
+
+                const status = document.createElement("p");
+                status.textContent = "Status: " + server.status;
+
+                const disk = document.createElement("p");
+                disk.textContent = "Disk Usage: " + server.disk_usage + "%";
+
+                const nginx = document.createElement("p");
+                nginx.textContent = "Nginx: " + server.nginx;
+
+                const ssh = document.createElement("p");
+                ssh.textContent = "SSH: " + server.ssh;
+
+                card.append(name, status, disk, nginx, ssh);
+                container.appendChild(card);
+            }
+
+        } catch (error) {
+            container.textContent = "Error: " + error.message;
+        }
+    }
+
+    loadServers();
+
+    // Refresh the displayed information every 5 seconds
+    setInterval(loadServers, 5000);
+</script>
+</body>
+</html>
